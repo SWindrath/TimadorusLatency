@@ -13,8 +13,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import de.windrath.timadorus.latency.util.Message;
-
 /**
  * Based on the TCP example by David Drager found at
  * http://systembash.com/content/a-simple-java-tcp-server-and-tcp-client/
@@ -157,7 +155,7 @@ class Listener implements Runnable {
      * Creates a new Listener, that is automatically started.
      * 
      * @param connectionSocket
-     * @param sender 
+     * @param sender
      * @param doubleDeviation
      * @param minDelay
      * @throws IOException
