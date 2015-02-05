@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Steffen
  *
  */
-class DelayedServer implements Runnable {
+public class DelayedServerSocket implements Runnable {
 
     private List<Thread> listenerSenderList;
 
@@ -34,8 +34,6 @@ class DelayedServer implements Runnable {
 
     private BlockingQueue<Message> outputQueue;
 
-    private Message deserializer;
-
     /**
      * Instantiates a new delayed server. This Server will wait for messages and
      * reply after the delay. if a deviation is given, the delay will be a
@@ -48,12 +46,11 @@ class DelayedServer implements Runnable {
      * @param deviation
      *            the deviation
      */
-    public DelayedServer(int port, int delay, int deviation, Message deserializer) {
+    public DelayedServerSocket(int port, int delay, int deviation) {
         listenerSenderList = new ArrayList<Thread>();
         this.port = port;
         this.inputQueue = new ArrayBlockingQueue<Message>(1024);
         this.outputQueue = new ArrayBlockingQueue<Message>(1024);
-        this.deserializer = deserializer;
         // Delay and deviation is modified for the use with the java.util.Random
         // class
         this.minDelay = delay - deviation;
@@ -70,8 +67,8 @@ class DelayedServer implements Runnable {
      * @param delay
      *            the delay
      */
-    public DelayedServer(int port, int delay, Message deserializer) {
-        this(port, delay, 0, deserializer);
+    public DelayedServerSocket(int port, int delay) {
+        this(port, delay, 0);
     }
 
     public BlockingQueue<Message> getInputQueue() {
@@ -105,7 +102,7 @@ class DelayedServer implements Runnable {
                 // Listener and Sender won't let the whole server crash.
                 try {
                     listenerSenderList.add(Listener.newInstance(
-                            connectionSocket, inputQueue, deserializer, sender));
+                            connectionSocket, inputQueue, sender));
 
                 } catch (IOException e) {
                     // Ignore or Log
@@ -137,16 +134,13 @@ class Listener implements Runnable {
     private InputStream in;
 
     private BlockingQueue<Message> outputQueue;
-
-    private Message deserializer;
     
     private Sender sender;
 
     private Listener(Socket connectionSocket,
-            BlockingQueue<Message> inputQueue, Message deserializer, Sender sender)
+            BlockingQueue<Message> inputQueue, Sender sender)
             throws IOException {
         this.connectionSocket = connectionSocket;
-        this.deserializer = deserializer;
         this.sender = sender;
         this.in = connectionSocket.getInputStream();
     }
@@ -161,10 +155,9 @@ class Listener implements Runnable {
      * @throws IOException
      */
     static Thread newInstance(Socket connectionSocket,
-            BlockingQueue<Message> inputQueue, Message deserializer, Sender sender)
+            BlockingQueue<Message> inputQueue, Sender sender)
             throws IOException {
-        Thread thread = new Thread(new Listener(connectionSocket, inputQueue,
-                deserializer, sender));
+        Thread thread = new Thread(new Listener(connectionSocket, inputQueue, sender));
         thread.start();
         return thread;
     }
@@ -187,7 +180,7 @@ class Listener implements Runnable {
                 }
                 byte[] rawMessage = Arrays.copyOfRange(buffer, 0, bytes);
                 // Put message into outputQueue
-                outputQueue.add(deserializer.deserialize(rawMessage));
+                outputQueue.add(Message.deserialize(rawMessage));
             }
         } catch (IOException e) {
             e.printStackTrace();

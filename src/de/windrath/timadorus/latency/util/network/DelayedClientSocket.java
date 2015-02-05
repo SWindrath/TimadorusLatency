@@ -16,7 +16,7 @@ import java.util.concurrent.BlockingQueue;
  * @author Steffen
  *
  */
-public class DelayedClient implements Runnable {
+public class DelayedClientSocket implements Runnable {
 
     private int minDelay;
 
@@ -24,24 +24,19 @@ public class DelayedClient implements Runnable {
 
     private BlockingQueue<Message> outputQueue;
 
-    private Message deserializer;
-
     private Random generator;
 
     Socket clientSocket = null;
 
-    public DelayedClient(String host, int port, int delay, int deviation,
-            Message deserializer) throws IOException {
-        this(InetAddress.getByName(host), port, delay, deviation, deserializer);
+    public DelayedClientSocket(String host, int port, int delay, int deviation) throws IOException {
+        this(InetAddress.getByName(host), port, delay, deviation);
     }
 
-    public DelayedClient(InetAddress host, int port, int delay, int deviation,
-            Message deserializer) throws IOException {
+    public DelayedClientSocket(InetAddress host, int port, int delay, int deviation) throws IOException {
         this.generator = new Random();
         this.minDelay = Math.max(delay - deviation, 0);
         this.doubleDeviation = Math.min(deviation * 2, minDelay);
         this.outputQueue = new ArrayBlockingQueue<Message>(1024);
-        this.deserializer = deserializer;
         clientSocket = new Socket(host, port);
     }
 
@@ -67,13 +62,12 @@ public class DelayedClient implements Runnable {
 
                 byte[] rawMessage = Arrays.copyOfRange(buffer, 0, bytes);
                 // Put message into outputQueue
-                outputQueue.add(deserializer.deserialize(rawMessage));
+                outputQueue.add(Message.deserialize(rawMessage));
             }
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void send(Message msg) {

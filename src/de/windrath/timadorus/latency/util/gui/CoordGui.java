@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,15 +21,19 @@ public class CoordGui {
 
     CoordFrame frame;
     
-    public CoordGui(String titel, int myID, boolean hasOwnEntity) {
-        frame = new CoordFrame(titel, myID, hasOwnEntity);
+    public CoordGui(String titel, int myID, Observer observer, boolean hasOwnEntity) {
+        frame = new CoordFrame(titel, myID, observer, hasOwnEntity);
     }
     
     public static void main(String[] args)
     {
-       CoordFrame frame = new CoordFrame("Test", 1, true);
+       CoordFrame frame = new CoordFrame("Test", 1, null, true);
        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
        frame.setVisible(true);
+    }
+    
+    public void setEntityPosition(int iD, Point newPosition){
+        frame.setEntityPosition(iD, newPosition);
     }
     
 }
@@ -43,7 +48,7 @@ class CoordFrame extends JFrame {
     JPanel basicPanel;
     DrawPanel drawPanel;
     
-    public CoordFrame(String titel, int myID, boolean hasOwnEntity){
+    public CoordFrame(String titel, int myID, Observer observer, boolean hasOwnEntity){
         setTitle(titel);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
@@ -70,13 +75,15 @@ class CoordFrame extends JFrame {
             ySlider.setInverted(true);
             xSlider.setBounds(0, 500, 500, 50);
             button.setBounds(500,500,50,50);
-            
-            button.addActionListener(new CoordAction(xSlider, ySlider, myEntity, drawPanel));
+            CoordAction actionListener = new CoordAction(xSlider, ySlider, myEntity, drawPanel);
+            actionListener.addObserver(observer);
+            button.addActionListener(actionListener);
             button.setFont(new Font("Arial", Font.PLAIN, 11));
             
             basicPanel.add(ySlider);
             basicPanel.add(xSlider);
             basicPanel.add(button);
+            
         }else{
             basicPanel.setPreferredSize(new Dimension(500,500));
         }
@@ -133,7 +140,7 @@ class DrawPanel extends JPanel{
     }
 }
 
-class CoordAction implements ActionListener
+class CoordAction extends Observable implements ActionListener
 {
 
     JSlider xSlider;
@@ -152,7 +159,6 @@ class CoordAction implements ActionListener
     public void actionPerformed(ActionEvent arg0) {
         myEntity.setSecondaryPosition(new Point(xSlider.getValue(), ySlider.getValue()));
         panel.repaint();
-        
     }
 }
 
