@@ -46,6 +46,7 @@ public class DelayedClientSocket implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("Start listening Thread");
         InputStream in;
         try {
 
@@ -53,26 +54,31 @@ public class DelayedClientSocket implements Runnable {
             byte[] buffer = new byte[1024];
 
             // Run until stopped
+            System.out.println("Listen loop");
             while (!Thread.interrupted()) {
                 // Read messages from the Client
+                System.out.println("Listen loop");
                 int bytes = in.read(buffer);
                 if (bytes == -1) {
+                    System.out.println("Break");
                     break;
                 }
-
+                
                 byte[] rawMessage = Arrays.copyOfRange(buffer, 0, bytes);
                 // Put message into outputQueue
+                System.out.println("Client: Add Message to outputQueue");
                 outputQueue.add(Message.deserialize(rawMessage));
             }
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("End listening Thread");
     }
 
     public void send(Message msg) {
-        byte[] rawMessage = msg.serialize();
         try {
+            byte[] rawMessage = msg.serialize();
             Thread.sleep(minDelay + generator.nextInt(doubleDeviation));
             clientSocket.getOutputStream().write(rawMessage);
         } catch (InterruptedException e) {

@@ -30,8 +30,14 @@ public class DelayedServerSocket implements Runnable {
 
     private int doubleDeviation;
 
+    /**
+     * Queue will be filled with recieved messages.
+     */
     private BlockingQueue<Message> inputQueue;
 
+    /**
+     * All messages added to this Queue will be send to the clients.
+     */
     private BlockingQueue<Message> outputQueue;
 
     /**
@@ -71,10 +77,16 @@ public class DelayedServerSocket implements Runnable {
         this(port, delay, 0);
     }
 
+    /**
+     * Queue will be filled with recieved messages.
+     */
     public BlockingQueue<Message> getInputQueue() {
         return inputQueue;
     }
 
+    /**
+     * All messages added to this Queue will be send to the clients.
+     */
     public BlockingQueue<Message> getOutputQueue() {
         return outputQueue;
     }
@@ -103,13 +115,12 @@ public class DelayedServerSocket implements Runnable {
                 try {
                     listenerSenderList.add(Listener.newInstance(
                             connectionSocket, inputQueue, sender));
-
+                    sender.addClient(connectionSocket);
                 } catch (IOException e) {
                     // Ignore or Log
                 }
 
             }
-            
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -118,8 +129,8 @@ public class DelayedServerSocket implements Runnable {
                 welcomeSocket.close();
             } catch (IOException e) {
             }
-            
-            for(Thread thread : listenerSenderList){
+
+            for (Thread thread : listenerSenderList) {
                 thread.interrupt();
             }
         }
@@ -133,13 +144,14 @@ class Listener implements Runnable {
 
     private InputStream in;
 
-    private BlockingQueue<Message> outputQueue;
-    
+    private BlockingQueue<Message> inputQueue;
+
     private Sender sender;
 
     private Listener(Socket connectionSocket,
             BlockingQueue<Message> inputQueue, Sender sender)
             throws IOException {
+        this.inputQueue = inputQueue;
         this.connectionSocket = connectionSocket;
         this.sender = sender;
         this.in = connectionSocket.getInputStream();
@@ -157,7 +169,8 @@ class Listener implements Runnable {
     static Thread newInstance(Socket connectionSocket,
             BlockingQueue<Message> inputQueue, Sender sender)
             throws IOException {
-        Thread thread = new Thread(new Listener(connectionSocket, inputQueue, sender));
+        Thread thread = new Thread(new Listener(connectionSocket, inputQueue,
+                sender));
         thread.start();
         return thread;
     }
@@ -180,7 +193,7 @@ class Listener implements Runnable {
                 }
                 byte[] rawMessage = Arrays.copyOfRange(buffer, 0, bytes);
                 // Put message into outputQueue
-                outputQueue.add(Message.deserialize(rawMessage));
+                inputQueue.add(Message.deserialize(rawMessage));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -220,8 +233,8 @@ class Sender implements Runnable {
     public void addClient(Socket connectionSocket) throws IOException {
         clients.add(connectionSocket.getOutputStream());
     }
-    
-    public void removeClient(Socket connectionSocket) throws IOException{
+
+    public void removeClient(Socket connectionSocket) throws IOException {
         clients.remove(connectionSocket.getOutputStream());
     }
 
@@ -230,9 +243,12 @@ class Sender implements Runnable {
 
         while (!Thread.interrupted()) {
             try {
+                System.out.println("Wait for Message");
                 Message message = outputQueue.take();
+                System.out.println("Sending Message to Clients");
                 byte[] rawMessage = message.serialize();
                 for (OutputStream out : clients) {
+                    System.out.println("Send Message to Client");
                     Thread sendThread = new Thread(new Runnable() {
 
                         @Override
@@ -258,7 +274,10 @@ class Sender implements Runnable {
                 }
 
             } catch (InterruptedException e) {
-            } // no need for a finally block, as the sockets will be closed by the listeners
+            } catch (IOException e) {
+                e.printStackTrace();
+            } // no need for a finally block, as the sockets will be closed by
+              // the listeners
         }
 
     }

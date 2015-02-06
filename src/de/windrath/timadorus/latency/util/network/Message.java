@@ -1,39 +1,85 @@
 package de.windrath.timadorus.latency.util.network;
 
+import java.awt.Point;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class Message{
 
     private int iD;
 
-    private int xPosition;
-    
-    private int yPosition;
+    private Point position;
     
     private long timestamp;
+    
+    private Message(int iD, Point position, long timestamp){
+        this.iD = iD;
+        this.position = position;
+        this.timestamp = timestamp;
+    }
+    
+    public Message(int iD, Point position){
+        this(iD, position, System.currentTimeMillis());
+    }
+    
+    private Message(int iD, int xPosition, int yPosition, long timestamp){
+        this(iD, new Point(xPosition, yPosition), timestamp);
+    }
+    
+    public Message(int iD, int xPosition, int yPosition){
+        this(iD, new Point(xPosition, yPosition));
+    }
     
     public int getiD() {
         return iD;
     }
 
+    public Point getPosition() {
+        return position;
+    }
+    
     public int getxPosition() {
-        return xPosition;
+        return position.x;
     }
 
     public int getyPosition() {
-        return yPosition;
+        return position.y;
     }
 
     public long getTimestamp() {
         return timestamp;
     }
     
-    public static Message deserialize(byte[] rawMessage) {
-        // TODO Auto-generated method stub
-        return null;
+    public static Message deserialize(byte[] rawMessage) throws IOException {
+        ByteArrayInputStream bais = new ByteArrayInputStream(rawMessage);
+        DataInputStream dis = new DataInputStream(bais);
+        return new Message(dis.readInt(), dis.readInt(), dis.readInt(), dis.readLong());
     }
 
-    public byte[] serialize() {
-        // TODO Auto-generated method stub
-        return null;
+    public byte[] serialize() throws IOException {
+        
+        ByteArrayOutputStream baos = null;
+        DataOutputStream dos = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            dos = new DataOutputStream(baos);
+            
+            dos.writeInt(iD);
+            dos.writeInt(position.x);
+            dos.writeInt(position.y);
+            dos.writeLong(timestamp);
+            
+            return baos.toByteArray();
+        }  finally {
+            if (dos != null) {
+                dos.close();
+            }
+            if (baos != null) {
+                baos.close();
+            }
+        }
     }
-
 }
