@@ -8,7 +8,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowListener;
-import java.io.IOException;
 import java.util.HashMap;
 
 import javax.swing.JButton;
@@ -21,6 +20,10 @@ import de.windrath.timadorus.latency.util.network.IClientLogic;
 import de.windrath.timadorus.latency.util.network.Message;
 
 public class CoordGui {
+    
+    public final static int PLANE_SIZE = 200;
+    public final static int HALF_PLANE = PLANE_SIZE/2;
+    public final static int MENU_SIZE = 50;
     
     CoordFrame frame;
     
@@ -40,20 +43,6 @@ public class CoordGui {
     public void setListener(WindowListener listener){
         frame.addWindowListener(listener);
     }
-    
-//    public static void main(String[] args)
-//    {
-//       CoordFrame frame = new CoordFrame("Test", 0, new IClientLogic() {
-//        
-//        @Override
-//        public void onGUIEvent(Message msg) {
-//            // TODO Auto-generated method stub
-//            
-//        }
-//    });
-//       frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//       frame.setVisible(true);
-//    }
     
     public void setPrimaryEntityPosition(int iD, Point newPosition){
         frame.setPrimaryEntityPosition(iD, newPosition);
@@ -99,19 +88,19 @@ class CoordFrame extends JFrame {
         
         if(logic != null){
             
-            basicPanel.setPreferredSize(new Dimension(550,550));
+            basicPanel.setPreferredSize(new Dimension(CoordGui.PLANE_SIZE + CoordGui.MENU_SIZE,CoordGui.PLANE_SIZE + CoordGui.MENU_SIZE));
 
-            Entity myEntity = new Entity(new Point(250,250), DARK_GREEN, new Point(250,250), Color.RED, new Point(250, 250), Color.BLUE);        
+            Entity myEntity = new Entity(new Point(CoordGui.HALF_PLANE,CoordGui.HALF_PLANE), DARK_GREEN, new Point(CoordGui.HALF_PLANE,CoordGui.HALF_PLANE), Color.RED, new Point(CoordGui.HALF_PLANE, CoordGui.HALF_PLANE), Color.BLUE);        
             drawPanel.addEntity(myID, myEntity);
             
-            JSlider ySlider = new JSlider(SwingConstants.VERTICAL,0,500,250);
-            JSlider xSlider = new JSlider(SwingConstants.HORIZONTAL,0,500,250);
+            JSlider ySlider = new JSlider(SwingConstants.VERTICAL,0,CoordGui.PLANE_SIZE,CoordGui.HALF_PLANE);
+            JSlider xSlider = new JSlider(SwingConstants.HORIZONTAL,0,CoordGui.PLANE_SIZE,CoordGui.HALF_PLANE);
             JButton button = new JButton("Set");
             
-            ySlider.setBounds(500, 0, 50, 500);
+            ySlider.setBounds(CoordGui.PLANE_SIZE, 0, CoordGui.MENU_SIZE, CoordGui.PLANE_SIZE);
             ySlider.setInverted(true);
-            xSlider.setBounds(0, 500, 500, 50);
-            button.setBounds(500,500,50,50);
+            xSlider.setBounds(0, CoordGui.PLANE_SIZE, CoordGui.PLANE_SIZE, CoordGui.MENU_SIZE);
+            button.setBounds(CoordGui.PLANE_SIZE,CoordGui.PLANE_SIZE,CoordGui.MENU_SIZE,CoordGui.MENU_SIZE);
             CoordAction actionListener = new CoordAction(xSlider, ySlider, myEntity, drawPanel, myID, logic);
             button.addActionListener(actionListener);
             button.setFont(new Font("Arial", Font.PLAIN, 11));
@@ -121,7 +110,7 @@ class CoordFrame extends JFrame {
             basicPanel.add(button);
             
         }else{
-            basicPanel.setPreferredSize(new Dimension(500,500));
+            basicPanel.setPreferredSize(new Dimension(CoordGui.PLANE_SIZE,CoordGui.PLANE_SIZE));
         }
         
         basicPanel.add(drawPanel);
@@ -154,8 +143,7 @@ class DrawPanel extends JPanel{
     private HashMap<Integer, Entity> entities;
     
     public DrawPanel(int myID){
-        //setPreferredSize(new Dimension(500,500));
-        setBounds(0, 0, 500, 500);
+        setBounds(0, 0, CoordGui.PLANE_SIZE, CoordGui.PLANE_SIZE);
         setBackground(Color.WHITE);
         entities = new HashMap<Integer, Entity>();
     }
