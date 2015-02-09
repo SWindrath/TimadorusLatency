@@ -34,10 +34,12 @@ public class PredictionServerLogic implements Runnable {
             while (!Thread.interrupted()) {
                 //Take next Message
                 Message msg = inputQueue.take();
-                //Display Message content in GUI
-                gui.setPrimaryEntityPosition(msg.getiD(), msg.getPosition());
                 //Randomly set if the Message was accepted or not.
                 msg.setSuccessful(generator.nextBoolean());
+                //Display Message content in GUI if successful
+                if(msg.isSuccessful()){
+                    gui.setPrimaryEntityPosition(msg.getiD(), msg.getPosition());
+                }
                 //Send Message to all clients
                 outputQueue.put(msg);
             }
