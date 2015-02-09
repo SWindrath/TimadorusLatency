@@ -15,18 +15,21 @@ public class Message{
     
     private long timestamp;
     
-    private Message(int iD, Point position, long timestamp){
+    private boolean successful;
+    
+	private Message(int iD, Point position, long timestamp, boolean b){
         this.iD = iD;
         this.position = position;
         this.timestamp = timestamp;
+        this.successful = b;
     }
     
     public Message(int iD, Point position){
-        this(iD, position, System.currentTimeMillis());
+        this(iD, position, System.currentTimeMillis(), false);
     }
     
-    private Message(int iD, int xPosition, int yPosition, long timestamp){
-        this(iD, new Point(xPosition, yPosition), timestamp);
+    private Message(int iD, int xPosition, int yPosition, long timestamp, boolean b){
+        this(iD, new Point(xPosition, yPosition), timestamp, b);
     }
     
     public Message(int iD, int xPosition, int yPosition){
@@ -53,10 +56,18 @@ public class Message{
         return timestamp;
     }
     
+    public boolean isSuccessful() {
+		return successful;
+	}
+
+	public void setSuccessful(boolean successful) {
+		this.successful = successful;
+	}
+    
     public static Message deserialize(byte[] rawMessage) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(rawMessage);
         DataInputStream dis = new DataInputStream(bais);
-        return new Message(dis.readInt(), dis.readInt(), dis.readInt(), dis.readLong());
+        return new Message(dis.readInt(), dis.readInt(), dis.readInt(), dis.readLong(), dis.readBoolean());
     }
 
     public byte[] serialize() throws IOException {
@@ -71,6 +82,7 @@ public class Message{
             dos.writeInt(position.x);
             dos.writeInt(position.y);
             dos.writeLong(timestamp);
+            dos.writeBoolean(successful);
             
             return baos.toByteArray();
         }  finally {

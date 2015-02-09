@@ -23,7 +23,7 @@ public class PredictionClient {
             
             //Logic
             //Initialize the logic
-            PredictionClientLogic logic = new PredictionClientLogic(client);
+            PredictionClientLogic logic = new PredictionClientLogic(client, myID);
             Thread logicThread = new Thread(logic);
             logicThread.start();
             

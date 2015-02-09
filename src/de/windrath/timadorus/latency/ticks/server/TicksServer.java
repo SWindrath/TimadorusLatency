@@ -18,7 +18,7 @@ public class TicksServer {
         CoordGui gui = new CoordGui("Server", 0, null);
         
         //Logic
-        TicksServerLogic logic = new TicksServerLogic(server.getInputQueue(), server.getOutputQueue(), gui);
+        TicksServerLogic logic = new TicksServerLogic(server.getInputQueue(), server.getOutputQueue(), gui, server);
         Thread logicThread = new Thread(logic);
         logicThread.start();
         

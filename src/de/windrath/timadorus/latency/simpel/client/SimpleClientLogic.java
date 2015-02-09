@@ -23,8 +23,9 @@ public class SimpleClientLogic implements IClientLogic, Runnable{
     
     @Override
     public void onGUIEvent(Message msg) {
+    	//Set the Position of the blue Cross 
+    	gui.setTertiaryEntityPosition(msg.getiD(), msg.getPosition());
         // Client sends messages to the Server
-        System.out.println("clientLogic sends Message to clientSocket");
         client.send(msg);    
     }
 
@@ -36,7 +37,6 @@ public class SimpleClientLogic implements IClientLogic, Runnable{
             while(!Thread.interrupted()){
                 //Take next message, wait if no messages are available.
                 Message msg = queue.take();
-                System.out.println("Client:Message recieved");
                 gui.setPrimaryEntityPosition(msg.getiD(), msg.getPosition());
                 gui.setSecondaryEntityPosition(msg.getiD(), msg.getPosition());
             }

@@ -136,6 +136,11 @@ public class DelayedServerSocket implements Runnable {
         }
 
     }
+
+	public void sendTo(int getiD, Message message) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 
 class Listener implements Runnable {
@@ -246,8 +251,8 @@ class Sender implements Runnable {
                 System.out.println("Wait for Message");
                 Message message = outputQueue.take();
                 System.out.println("Sending Message to Clients");
-                byte[] rawMessage = message.serialize();
-                for (OutputStream out : clients) {
+                final byte[] rawMessage = message.serialize();
+                for (final OutputStream out : clients) {
                     System.out.println("Send Message to Client");
                     Thread sendThread = new Thread(new Runnable() {
 

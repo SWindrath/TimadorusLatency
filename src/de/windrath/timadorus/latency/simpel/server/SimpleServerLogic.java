@@ -34,7 +34,6 @@ public class SimpleServerLogic implements Runnable {
                 Message msg = inputQueue.take();
                 //Display Message content in GUI
                 gui.setPrimaryEntityPosition(msg.getiD(), msg.getPosition());
-                gui.setSecondaryEntityPosition(msg.getiD(), msg.getPosition());
                 //Send Message to all clients
                 outputQueue.put(msg);
             }

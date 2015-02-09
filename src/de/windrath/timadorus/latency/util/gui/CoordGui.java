@@ -56,6 +56,10 @@ public class CoordGui {
         frame.setTertiaryEntityPosition(iD, newPosition);
     }
     
+    public void revertToSecondaryPosition(int iD){
+    	frame.revertToSecondaryPosition(iD);
+    }
+    
 }
 
 class CoordFrame extends JFrame {
@@ -75,7 +79,12 @@ class CoordFrame extends JFrame {
     }
 
     
-    public CoordFrame(String titel, int myID, IClientLogic logic){
+    public void revertToSecondaryPosition(int iD) {
+		drawPanel.revertToSecondaryPosition(iD);
+	}
+
+
+	public CoordFrame(String titel, int myID, IClientLogic logic){
         setTitle(titel);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
@@ -148,7 +157,17 @@ class DrawPanel extends JPanel{
         entities = new HashMap<Integer, Entity>();
     }
     
-    @Override
+    public void revertToSecondaryPosition(int iD) {
+    	 if(entities.containsKey(iD)){
+             Entity entity = entities.get(iD);
+             if(entity.getSecondaryColor() != null){
+                 entities.get(iD).setPrimaryPosition(entities.get(iD).getSecondaryPosition());
+             }
+         }
+         repaint();	
+	}
+
+	@Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
@@ -215,8 +234,7 @@ class CoordAction implements ActionListener
     
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        Point position = new Point(xSlider.getValue(), ySlider.getValue());
-        myEntity.setTertiaryPosition(position);
+        final Point position = new Point(xSlider.getValue(), ySlider.getValue());
         Thread notifyThread = new Thread(new Runnable() {
 
             @Override
@@ -226,7 +244,6 @@ class CoordAction implements ActionListener
 
         });
         notifyThread.start();
-        panel.repaint();
     }
 }
 
